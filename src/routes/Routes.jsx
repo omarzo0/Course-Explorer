@@ -1,14 +1,16 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import CoursesList from '../pages/CoursesList';
+import CourseDetail from '../pages/CourseDetail';
+import NotFound from '../pages/NotFound';
 
-import Home from '@/pages/Home';
-
-export default function Routes() {
+export default function AppRoutes() {
   return (
     <Router>
-      <Switch>
-        <Route exact path='/' component={Home} />
-      </Switch>
+      <Routes>
+        <Route path='/' element={<CoursesList />} />
+        <Route path='/courses/:id' element={<CourseDetail />} />
+        <Route path='*' element={<NotFound />} />
+      </Routes>
     </Router>
   );
 }
