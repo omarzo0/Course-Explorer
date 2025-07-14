@@ -5,7 +5,8 @@ import SearchBar from "../components/SearchBar";
 import FilterDropdown from "../components/FilterDropdown";
 import { getCourses } from "../api/course-list";
 import toast from "react-hot-toast";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import SadFaceIcon from "../ui/SadFaceIcon";
 
 export default function CoursesList() {
   const [courses, setCourses] = useState([]);
@@ -17,11 +18,10 @@ export default function CoursesList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [bookmarks, setBookmarks] = useState([]);
-  const abortControllerRef = useRef(null);
   const [bookmarkLoading, setBookmarkLoading] = useState(null);
+  const abortControllerRef = useRef(null);
   const navigate = useNavigate();
 
-  // Load saved bookmarks from localStorage
   useEffect(() => {
     const savedBookmarks = localStorage.getItem("courseBookmarks");
     if (savedBookmarks) {
@@ -29,7 +29,6 @@ export default function CoursesList() {
     }
   }, []);
 
-  // Bookmark toggle function
   const toggleBookmark = useCallback((courseId, e) => {
     e.stopPropagation();
     setBookmarkLoading(courseId);
@@ -55,7 +54,6 @@ export default function CoursesList() {
     });
   }, []);
 
-  // Stable fetch function with useCallback
   const fetchCourses = useCallback(async (
     pageNum = 1,
     search = "",
@@ -120,7 +118,6 @@ export default function CoursesList() {
     }
   }, []);
 
-  // Debounced search function
   const debouncedSearch = useCallback(
     debounce((search, category) => {
       fetchCourses(1, search, category);
@@ -128,24 +125,20 @@ export default function CoursesList() {
     [fetchCourses]
   );
 
-  // Search handler
   const handleSearch = (term) => {
     setSearchTerm(term);
     debouncedSearch(term, categoryFilter);
   };
 
-  // Category filter handler
   const handleCategoryChange = (category) => {
     setCategoryFilter(category);
     debouncedSearch(searchTerm, category === "All" ? "" : category);
   };
 
-  // Handle course card click
-  const handleCourseClick = (courseId) => {
+  const handleCourseClick = useCallback((courseId) => {
     navigate(`/courses/${courseId}`);
-  };
+  }, [navigate]);
 
-  // Initial load
   useEffect(() => {
     fetchCourses(1, "", "");
 
@@ -157,7 +150,6 @@ export default function CoursesList() {
     };
   }, [fetchCourses, debouncedSearch]);
 
-  // Render loading, error, or empty states
   if (initialLoad) {
     return (
       <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
@@ -192,13 +184,12 @@ export default function CoursesList() {
             "AI/ML",
           ]}
         />
-       <Link
-  to="/bookmarks"
-  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors no-underline"
->
-  Bookmarks
-</Link>
-
+        <Link
+          to="/bookmarks"
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors no-underline"
+        >
+          Bookmarks
+        </Link>
       </div>
 
       {loading && !initialLoad && (
@@ -209,20 +200,8 @@ export default function CoursesList() {
 
       {showEmptyState ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16 text-gray-400 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+        <SadFaceIcon className="h-16 w-16 text-gray-400 mb-4" />
+
           <h2 className="text-xl font-medium text-gray-600 mb-2">
             No courses found
           </h2>
@@ -244,31 +223,34 @@ export default function CoursesList() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                isBookmarked={bookmarks.includes(course.id)}
-                onBookmarkToggle={toggleBookmark}
-                onClick={() => handleCourseClick(course.id)}
-                isLoading={bookmarkLoading === course.id}
-              />
-            ))}
-          </div>
+          <div className="space-y-10">
 
-          {hasMore && !loading && courses.length > 0 && (
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() =>
-                  fetchCourses(page + 1, searchTerm, categoryFilter, true)
-                }
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Load More
-              </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  isBookmarked={bookmarks.includes(course.id)}
+                  onBookmarkToggle={toggleBookmark}
+                  onClick={() => handleCourseClick(course.id)}
+                  isLoading={bookmarkLoading === course.id}
+                />
+              ))}
             </div>
-          )}
+
+            {hasMore && !loading && courses.length > 0 && (
+              <div className="flex justify-center">
+                <button
+                  onClick={() =>
+                    fetchCourses(page + 1, searchTerm, categoryFilter, true)
+                  }
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import CourseCard from "../components/CourseCard";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import ArrowLeftIcon from "../ui/ArrowLeftIcon";
+import BookmarkOutlineIcon  from "../ui/BookmarkOutlineIcon";
 
 export default function Bookmarks() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState([]);
@@ -67,36 +69,14 @@ export default function Bookmarks() {
         onClick={() => navigate("/")}
         className="mb-6 flex items-center text-blue-500 hover:text-blue-600"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 mr-1"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fillRule="evenodd"
-            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-            clipRule="evenodd"
-          />
-        </svg>
+       <ArrowLeftIcon className="h-5 w-5 mr-1" />
+
         Back to Courses
       </button>
       {bookmarkedCourses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16 text-gray-400 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-            />
-          </svg>
+         <BookmarkOutlineIcon className="h-16 w-16 text-gray-400 mb-4" />
+
           <h2 className="text-xl font-medium text-gray-600 mb-2">
             No bookmarked courses
           </h2>
@@ -105,7 +85,7 @@ export default function Bookmarks() {
             bookmark your favorites!
           </p>
           <button
-            onClick={() => navigate("/courses")}
+            onClick={() => navigate("/")}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Browse Courses

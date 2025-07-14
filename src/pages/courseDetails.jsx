@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getCourseById } from "../api/course-list";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
+import ArrowLeftIcon from "../ui/ArrowLeftIcon";
 
 export default function CourseDetails() {
   const { id } = useParams();
@@ -48,18 +49,8 @@ export default function CourseDetails() {
         onClick={() => navigate("/")}
         className="mb-6 flex items-center text-blue-500 hover:text-blue-600"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 mr-1"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fillRule="evenodd"
-            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-            clipRule="evenodd"
-          />
-        </svg>
+       <ArrowLeftIcon className="h-5 w-5 mr-1" />
+       
         Back to Courses
       </button>
 
@@ -82,17 +73,11 @@ export default function CourseDetails() {
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2">
                 {course.category}
               </span>
-             
             </div>
-
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">About This Course</h2>
               <p className="text-gray-700">{course.description}</p>
-            </div>
-
-          
-
-           
+            </div>           
           </div>
         </div>
 

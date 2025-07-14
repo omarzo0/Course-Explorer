@@ -7,6 +7,17 @@ const api = axios.create({
   timeout: 10000,
 });
 
+const CACHE_PREFIX = 'course_cache_';
+const CACHE_EXPIRY = 5 * 60 * 1000; 
+
+const getCacheKey = (page, limit, search, category) => {
+  return `${CACHE_PREFIX}${page}_${limit}_${search}_${category}`;
+};
+
+const isCacheValid = (cachedData) => {
+  return cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRY;
+};
+
 export const getCourses = async (
   page = 1,
   limit = 6,
@@ -14,6 +25,13 @@ export const getCourses = async (
   category = '',
   signal = null
 ) => {
+  const cacheKey = getCacheKey(page, limit, search, category);
+  
+  const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+  if (isCacheValid(cachedData)) {
+    return cachedData.data;
+  }
+
   try {
     const params = {
       page,
@@ -30,23 +48,39 @@ export const getCourses = async (
 
     const config = signal ? { params, signal } : { params };
     const response = await api.get('/course-list', config);
+    
+    const dataToCache = {
+      data: response.data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(dataToCache));
+
     return response.data;
   } catch (error) {
     if (axios.isCancel(error)) {
       console.log('Request canceled:', error.message);
+      if (cachedData) return cachedData.data;
       return [];
     }
     console.error('Error fetching courses:', error);
+    if (cachedData) return cachedData.data;
     throw error;
   }
 };
 
 export const getCourseById = async (id) => {
+  const cacheKey = `${CACHE_PREFIX}single_${id}`;
+  
+  const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+  if (isCacheValid(cachedData)) {
+    return cachedData.data;
+  }
+
   try {
     const response = await api.get(`/course-list/${id}`);
     const data = response.data;
 
-    return {
+    const transformedData = {
       id: data.id,
       title: data.Title,
       teacher: data['Teacher-Name'],
@@ -68,9 +102,18 @@ export const getCourseById = async (id) => {
           duration: lesson.duration || 'Not specified',
         })) || [],
     };
+
+    const dataToCache = {
+      data: transformedData,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(dataToCache));
+
+    return transformedData;
   } catch (error) {
     console.error('Error fetching course:', error);
+
+    if (cachedData) return cachedData.data;
     throw error;
   }
 };
-
