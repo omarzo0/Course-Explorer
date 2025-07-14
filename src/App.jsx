@@ -1,6 +1,17 @@
-import React from 'react';
-import AppRoutes from './routes/Routes';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-export default function App() {
-  return <AppRoutes />;
+import CourseDetail from './pages/courseDetails';
+import CoursesList from './pages/CoursesList';
+import NotFound from './pages/NotFound';
+
+export default function AppRoutes() {
+  return (
+    <Router>
+      <Routes>
+        <Route path='/' element={<CoursesList />} />
+        <Route path='/courses/:id' element={<CourseDetail />} />
+        <Route path='*' element={<NotFound />} />
+      </Routes>
+    </Router>
+  );
 }

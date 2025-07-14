@@ -1,11 +1,19 @@
+import tailwindcssPlugin from '@tailwindcss/vite';
+import viteReactPlugin from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import reactRefresh from '@vitejs/plugin-react-refresh';
-const path = require('path');
+import { viteSingleFile } from 'vite-plugin-singlefile';
+import viteConfigPaths from 'vite-tsconfig-paths';
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  resolve: {
-    alias: [{ find: '@', replacement: path.resolve(__dirname, '/src') }],
+  build: {
+    reportCompressedSize: false,
+    commonjsOptions: { transformMixedEsModules: true },
   },
-  plugins: [reactRefresh()],
+  plugins: [
+    tailwindcssPlugin(),
+    viteConfigPaths(),
+    viteReactPlugin(),
+    // eslint-disable-next-line no-undef
+    process.env.INLINE ? viteSingleFile() : null,
+  ].filter(Boolean),
 });

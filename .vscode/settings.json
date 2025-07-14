@@ -1,6 +1,11 @@
 {
-    "css.validate": false,
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2,
-    "prettier.tabWidth": 2
+  "editor.formatOnSave": false,
+  "files.autoSave": "onFocusChange",
+  "eslint.validate": [
+    "javascript"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "css.validate": false
 }
