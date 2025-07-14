@@ -14,15 +14,22 @@ export default function CourseCard({
 
   const handleBookmarkClick = (e) => {
     e.stopPropagation();
-    onBookmarkToggle(course.id);
+    if (!isLoading) {
+      onBookmarkToggle(course.id, e);
+    }
   };
 
   return (
     <div
-      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow relative"
       onClick={handleCardClick}
     >
-      {" "}
+      {isLoading && (
+        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-10">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+      
       <img
         src={course.image_source}
         alt={course.title}
@@ -31,15 +38,10 @@ export default function CourseCard({
       <div className="p-4">
         <div className="flex justify-between items-start">
           <h3 className="text-lg font-semibold mb-2">{course.title}</h3>
-          {isLoading && (
-            <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          )}
           <button
             onClick={handleBookmarkClick}
             disabled={isLoading}
-            className="text-gray-400 hover:text-yellow-500 focus:outline-none"
+            className={`text-gray-400 hover:text-yellow-500 focus:outline-none ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
           >
             {isBookmarked ? (

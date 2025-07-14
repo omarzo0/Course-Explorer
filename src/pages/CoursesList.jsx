@@ -5,7 +5,7 @@ import SearchBar from "../components/SearchBar";
 import FilterDropdown from "../components/FilterDropdown";
 import { getCourses } from "../api/course-list";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 
 export default function CoursesList() {
   const [courses, setCourses] = useState([]);
@@ -55,70 +55,74 @@ export default function CoursesList() {
     });
   }, []);
 
-  // Fetch courses with pagination and filtering
-  const fetchCourses = useCallback(
-    async (pageNum = 1, search = "", category = "", isLoadMore = false) => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+  // Stable fetch function with useCallback
+  const fetchCourses = useCallback(async (
+    pageNum = 1,
+    search = "",
+    category = "",
+    isLoadMore = false
+  ) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      if (!isLoadMore) {
+        setLoading(true);
+        setError(null);
       }
 
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+      const data = await getCourses(
+        pageNum,
+        6,
+        search,
+        category,
+        controller.signal
+      );
 
-      try {
-        if (!isLoadMore) {
-          setLoading(true);
-          setError(null);
-        }
+      const transformedData = data.map((item) => ({
+        id: item.id,
+        title: item.Title,
+        teacher: item["Teacher-Name"],
+        description: item["Short-Description"],
+        category: item.category,
+        image_source:
+          item.Image?.url && item.Image.url.trim() !== ""
+            ? item.Image.url
+            : "https://via.placeholder.com/300x200",
+        lessons: [],
+      }));
 
-        const data = await getCourses(
-          pageNum,
-          6,
-          search,
-          category,
-          controller.signal
-        );
+      if (isLoadMore) {
+        setCourses((prev) => [...prev, ...transformedData]);
+      } else {
+        setCourses(transformedData);
+      }
 
-        const transformedData = data.map((item) => ({
-          id: item.id,
-          title: item.Title,
-          teacher: item["Teacher-Name"],
-          description: item["Short-Description"],
-          category: item.category,
-          image_source:
-            item.Image?.url && item.Image.url.trim() !== ""
-              ? item.Image.url
-              : "https://via.placeholder.com/300x200",
-          lessons: [],
-        }));
-
-        if (isLoadMore) {
-          setCourses((prev) => [...prev, ...transformedData]);
-        } else {
-          setCourses(transformedData);
-        }
-
-        setHasMore(data.length >= 6);
-        setPage(pageNum);
+      setHasMore(data.length >= 6);
+      setPage(pageNum);
+      setInitialLoad(false);
+      setLoading(false);
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("Failed to fetch courses:", err);
+        setError(err.message || "Failed to load courses");
         setInitialLoad(false);
         setLoading(false);
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Failed to fetch courses:", err);
-          setError(err.message || "Failed to load courses");
-          setInitialLoad(false);
-          setLoading(false);
-          toast.error("Failed to load courses. Please try again.");
+        if (!isLoadMore) {
+          setCourses([]);
         }
+        toast.error("Failed to load courses. Please try again.");
       }
-    },
-    []
-  );
+    }
+  }, []);
 
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce((search, category) => {
-      setPage(1);
       fetchCourses(1, search, category);
     }, 500),
     [fetchCourses]
@@ -127,23 +131,13 @@ export default function CoursesList() {
   // Search handler
   const handleSearch = (term) => {
     setSearchTerm(term);
-    if (term === "" && categoryFilter === "") {
-      // If both search and filter are empty, do immediate fetch
-      fetchCourses(1, "", "");
-    } else {
-      debouncedSearch(term, categoryFilter);
-    }
+    debouncedSearch(term, categoryFilter);
   };
 
   // Category filter handler
   const handleCategoryChange = (category) => {
     setCategoryFilter(category);
-    if (category === "" && searchTerm === "") {
-      // If both search and filter are empty, do immediate fetch
-      fetchCourses(1, "", "");
-    } else {
-      debouncedSearch(searchTerm, category);
-    }
+    debouncedSearch(searchTerm, category === "All" ? "" : category);
   };
 
   // Handle course card click
@@ -151,7 +145,7 @@ export default function CoursesList() {
     navigate(`/courses/${courseId}`);
   };
 
-  // Initial load and cleanup
+  // Initial load
   useEffect(() => {
     fetchCourses(1, "", "");
 
@@ -198,6 +192,13 @@ export default function CoursesList() {
             "AI/ML",
           ]}
         />
+       <Link
+  to="/bookmarks"
+  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors no-underline"
+>
+  Bookmarks
+</Link>
+
       </div>
 
       {loading && !initialLoad && (
@@ -226,14 +227,15 @@ export default function CoursesList() {
             No courses found
           </h2>
           <p className="text-gray-500 mb-6 max-w-md">
-            {searchTerm || categoryFilter !== "All"
+            {searchTerm || categoryFilter
               ? "No courses match your search criteria. Try adjusting your filters."
               : "There are currently no courses available. Please check back later."}
           </p>
           <button
             onClick={() => {
-              handleSearch("");
-              handleCategoryChange("All");
+              setSearchTerm("");
+              setCategoryFilter("");
+              fetchCourses(1, "", "");
             }}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >

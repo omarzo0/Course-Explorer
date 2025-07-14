@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCourseById } from "../api/course-list";
 import toast from "react-hot-toast";
@@ -10,8 +10,11 @@ export default function CourseDetails() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+ const hasFetched = useRef(false);
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     const fetchCourse = async () => {
       try {
         setLoading(true);
@@ -79,9 +82,7 @@ export default function CourseDetails() {
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2">
                 {course.category}
               </span>
-              <span className="text-gray-500 text-sm">
-                {course.level} • {course.duration}
-              </span>
+             
             </div>
 
             <div className="mb-6">
@@ -89,42 +90,9 @@ export default function CourseDetails() {
               <p className="text-gray-700">{course.description}</p>
             </div>
 
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Course Details</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-500">Rating</p>
-                  <p className="font-medium">
-                    {course.rating}/5 ({course.students} students)
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Level</p>
-                  <p className="font-medium">{course.level}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Duration</p>
-                  <p className="font-medium">{course.duration}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Category</p>
-                  <p className="font-medium">{course.category}</p>
-                </div>
-              </div>
-            </div>
+          
 
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Requirements</h2>
-              <ul className="list-disc pl-5 text-gray-700">
-                {course.requirements.length > 0 ? (
-                  course.requirements.map((req, index) => (
-                    <li key={index}>{req}</li>
-                  ))
-                ) : (
-                  <li>No specific requirements</li>
-                )}
-              </ul>
-            </div>
+           
           </div>
         </div>
 

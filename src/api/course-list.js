@@ -44,27 +44,33 @@ export const getCourses = async (
 export const getCourseById = async (id) => {
   try {
     const response = await api.get(`/course-list/${id}`);
+    const data = response.data;
+
     return {
-      id: response.data.id,
-      title: response.data.Title,
-      teacher: response.data['Teacher-Name'],
-      description:
-        response.data['Long-Description'] || response.data['Short-Description'],
-      category: response.data.category,
+      id: data.id,
+      title: data.Title,
+      teacher: data['Teacher-Name'],
+      description: data['Full-Description'] || data['Short-Description'],
+      category: data.category,
       image_source:
-        response.data.Image?.url && response.data.Image.url.trim() !== ''
-          ? response.data.Image.url
+        data.Image?.url && data.Image.url.trim() !== ''
+          ? data.Image.url
           : 'https://via.placeholder.com/800x450',
-      lessons: response.data.lessons || [],
-      duration: response.data.duration || 'Not specified',
-      level: response.data.level || 'Beginner',
-      rating: response.data.rating || 0,
-      students: response.data.students || 0,
-      syllabus: response.data.syllabus || [],
-      requirements: response.data.requirements || [],
+      level: data.level || 'Beginner',
+      duration: data.duration || 'Not specified',
+      rating: data.rating || 0,
+      students: data.students || 0,
+      requirements: data.requirements || [],
+      syllabus:
+        data.listOfLessons?.map((lesson) => ({
+          title: lesson.title,
+          description: lesson.description || '',
+          duration: lesson.duration || 'Not specified',
+        })) || [],
     };
   } catch (error) {
     console.error('Error fetching course:', error);
     throw error;
   }
 };
+
