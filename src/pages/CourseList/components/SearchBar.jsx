@@ -1,4 +1,4 @@
-import ClearSearchIcon from '../ui/ClearSearchIcon';
+import ClearSearchIcon from '../../../ui/ClearSearchIcon';
 
 export default function SearchBar({ value, onChange, onClear }) {
   return (

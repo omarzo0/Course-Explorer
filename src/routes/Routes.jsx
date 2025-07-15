@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import Bookmarks from '../pages/Bookmarks';
 import CourseDetail from '../pages/courseDetails';
-import CoursesList from '../pages/CoursesList';
+import CoursesList from '../pages/CourseList/index';
 import NotFound from '../pages/NotFound';
 
 export default function AppRoutes() {

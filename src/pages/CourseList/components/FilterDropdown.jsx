@@ -1,4 +1,4 @@
-import ChevronDownIcon from '../ui/ChevronDownIcon';
+import ChevronDownIcon from '../../../ui/ChevronDownIcon';
 
 export default function FilterDropdown({ value, onChange, categories }) {
   return (
