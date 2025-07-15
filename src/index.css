@@ -9,7 +9,8 @@
     font-style: normal;
     font-weight: 400;
     font-display: optional;
-    src: url('/fonts/inter-regular-webfont.woff2') format('woff2'),
+    src:
+      url('/fonts/inter-regular-webfont.woff2') format('woff2'),
       url('/fonts/inter-regular-webfont.woff') format('woff');
   }
 
@@ -19,7 +20,8 @@
     font-style: normal;
     font-weight: 500;
     font-display: optional;
-    src: url('/fonts/inter-medium-webfont.woff2') format('woff2'),
+    src:
+      url('/fonts/inter-medium-webfont.woff2') format('woff2'),
       url('/fonts/inter-medium-webfont.woff') format('woff');
   }
 
@@ -29,29 +31,30 @@
     font-style: normal;
     font-weight: 700;
     font-display: optional;
-    src: url('/fonts/inter-bold-webfont.woff2') format('woff2'),
+    src:
+      url('/fonts/inter-bold-webfont.woff2') format('woff2'),
       url('/fonts/inter-bold-webfont.woff') format('woff');
   }
 
   /* Write your own custom base styles here */
   h1 {
-    @apply text-3xl font-bold md:text-5xl font-primary;
+    @apply font-primary text-3xl font-bold md:text-5xl;
   }
 
   h2 {
-    @apply text-2xl font-bold md:text-4xl font-primary;
+    @apply font-primary text-2xl font-bold md:text-4xl;
   }
 
   h3 {
-    @apply text-xl font-bold md:text-3xl font-primary;
+    @apply font-primary text-xl font-bold md:text-3xl;
   }
 
   h4 {
-    @apply text-lg font-bold font-primary;
+    @apply font-primary text-lg font-bold;
   }
 
   body {
-    @apply text-sm font-primary md:text-base;
+    @apply font-primary text-sm md:text-base;
   }
 
   .layout {
@@ -60,6 +63,6 @@
 
     /* 1100px */
     max-width: 68.75rem;
-    @apply w-11/12 mx-auto;
+    @apply mx-auto w-11/12;
   }
 }

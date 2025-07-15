@@ -22,6 +22,8 @@ export default function CoursesList() {
   const [bookmarkLoading, setBookmarkLoading] = useState(null);
   const abortControllerRef = useRef(null);
   const navigate = useNavigate();
+  const observerRef = useRef();
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     const savedBookmarks = localStorage.getItem('courseBookmarks');
@@ -58,6 +60,9 @@ export default function CoursesList() {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+
+      if (loadingRef.current) return;
+      loadingRef.current = true;
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -104,6 +109,8 @@ export default function CoursesList() {
           }
           toast.error('Failed to load courses. Please try again.');
         }
+      } finally {
+        loadingRef.current = false;
       }
     },
     []
@@ -133,6 +140,22 @@ export default function CoursesList() {
     [navigate]
   );
 
+  const lastCourseElementRef = useCallback(
+    (node) => {
+      if (loadingRef.current) return;
+      if (observerRef.current) observerRef.current.disconnect();
+
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          fetchCourses(page + 1, searchTerm, categoryFilter, true);
+        }
+      });
+
+      if (node) observerRef.current.observe(node);
+    },
+    [loading, hasMore, page, searchTerm, categoryFilter, fetchCourses]
+  );
+
   useEffect(() => {
     fetchCourses(1, '', '');
 
@@ -140,6 +163,9 @@ export default function CoursesList() {
       debouncedSearch.cancel();
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+      }
+      if (observerRef.current) {
+        observerRef.current.disconnect();
       }
     };
   }, [fetchCourses, debouncedSearch]);
@@ -217,26 +243,37 @@ export default function CoursesList() {
         <>
           <div className='space-y-10'>
             <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-              {courses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  isBookmarked={bookmarks.includes(course.id)}
-                  onBookmarkToggle={toggleBookmark}
-                  onClick={() => handleCourseClick(course.id)}
-                  isLoading={bookmarkLoading === course.id}
-                />
-              ))}
+              {courses.map((course, index) => {
+                if (courses.length === index + 1) {
+                  return (
+                    <div ref={lastCourseElementRef} key={course.id}>
+                      <CourseCard
+                        course={course}
+                        isBookmarked={bookmarks.includes(course.id)}
+                        onBookmarkToggle={toggleBookmark}
+                        onClick={() => handleCourseClick(course.id)}
+                        isLoading={bookmarkLoading === course.id}
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <CourseCard
+                      key={course.id}
+                      course={course}
+                      isBookmarked={bookmarks.includes(course.id)}
+                      onBookmarkToggle={toggleBookmark}
+                      onClick={() => handleCourseClick(course.id)}
+                      isLoading={bookmarkLoading === course.id}
+                    />
+                  );
+                }
+              })}
             </div>
 
-            {hasMore && !loading && courses.length > 0 && (
-              <div className='flex justify-center'>
-                <button
-                  onClick={() => fetchCourses(page + 1, searchTerm, categoryFilter, true)}
-                  className='rounded-lg bg-blue-500 px-6 py-2 text-white transition-colors hover:bg-blue-600'
-                >
-                  Load More
-                </button>
+            {loading && courses.length > 0 && (
+              <div className='flex justify-center py-8'>
+                <div className='h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
               </div>
             )}
           </div>
