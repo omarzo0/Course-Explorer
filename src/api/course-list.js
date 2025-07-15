@@ -8,14 +8,31 @@ const api = axios.create({
 });
 
 const CACHE_PREFIX = 'course_cache_';
-const CACHE_EXPIRY = 5 * 60 * 1000;
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+const normalize = (str) => (str || '').toLowerCase().trim();
 
 const getCacheKey = (page, limit, search, category) => {
-  return `${CACHE_PREFIX}${page}_${limit}_${search}_${category}`;
+  return `${CACHE_PREFIX}${page}_${limit}_${normalize(search)}_${normalize(category)}`;
 };
 
 const isCacheValid = (cachedData) => {
   return cachedData && Date.now() - cachedData.timestamp < CACHE_EXPIRY;
+};
+
+const cleanOldCache = () => {
+  for (let key in localStorage) {
+    if (key.startsWith(CACHE_PREFIX)) {
+      try {
+        const cachedItem = JSON.parse(localStorage.getItem(key));
+        if (!isCacheValid(cachedItem)) {
+          localStorage.removeItem(key);
+        }
+      } catch {
+        localStorage.removeItem(key);
+      }
+    }
+  }
 };
 
 export const getCourses = async (
@@ -25,26 +42,25 @@ export const getCourses = async (
   category = '',
   signal = null
 ) => {
-  const cacheKey = getCacheKey(page, limit, search, category);
+  cleanOldCache();
 
-  const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+  const cacheKey = getCacheKey(page, limit, search, category);
+  let cachedData = null;
+
+  try {
+    cachedData = JSON.parse(localStorage.getItem(cacheKey));
+  } catch {
+    localStorage.removeItem(cacheKey);
+  }
+
   if (isCacheValid(cachedData)) {
     return cachedData.data;
   }
 
   try {
-    const params = {
-      page,
-      limit,
-    };
-
-    if (search) {
-      params.search = search;
-    }
-
-    if (category && category !== 'All') {
-      params.category = category;
-    }
+    const params = { page, limit };
+    if (search) params.search = search;
+    if (category && category !== 'All') params.category = category;
 
     const config = signal ? { params, signal } : { params };
     const response = await api.get('/course-list', config);
@@ -59,19 +75,23 @@ export const getCourses = async (
   } catch (error) {
     if (axios.isCancel(error)) {
       console.log('Request canceled:', error.message);
-      if (cachedData) return cachedData.data;
-      return [];
+      return cachedData?.data || [];
     }
     console.error('Error fetching courses:', error);
-    if (cachedData) return cachedData.data;
-    throw error;
+    return cachedData?.data || [];
   }
 };
 
 export const getCourseById = async (id) => {
   const cacheKey = `${CACHE_PREFIX}single_${id}`;
+  let cachedData = null;
 
-  const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+  try {
+    cachedData = JSON.parse(localStorage.getItem(cacheKey));
+  } catch {
+    localStorage.removeItem(cacheKey);
+  }
+
   if (isCacheValid(cachedData)) {
     return cachedData.data;
   }
@@ -112,8 +132,6 @@ export const getCourseById = async (id) => {
     return transformedData;
   } catch (error) {
     console.error('Error fetching course:', error);
-
-    if (cachedData) return cachedData.data;
-    throw error;
+    return cachedData?.data || null;
   }
 };

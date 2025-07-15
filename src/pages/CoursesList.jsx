@@ -24,6 +24,7 @@ export default function CoursesList() {
   const navigate = useNavigate();
   const observerRef = useRef();
   const loadingRef = useRef(false);
+const initialLoadRef = useRef(true);
 
   useEffect(() => {
     const savedBookmarks = localStorage.getItem('courseBookmarks');
@@ -140,35 +141,45 @@ export default function CoursesList() {
     [navigate]
   );
 
-  const lastCourseElementRef = useCallback(
-    (node) => {
-      if (loadingRef.current) return;
-      if (observerRef.current) observerRef.current.disconnect();
 
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+
+const lastCourseElementRef = useCallback(
+  (node) => {
+    if (loadingRef.current) return;
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !loading) {
+        if (!initialLoadRef.current) {
           fetchCourses(page + 1, searchTerm, categoryFilter, true);
         }
-      });
-
-      if (node) observerRef.current.observe(node);
-    },
-    [loading, hasMore, page, searchTerm, categoryFilter, fetchCourses]
-  );
-
-  useEffect(() => {
-    fetchCourses(1, '', '');
-
-    return () => {
-      debouncedSearch.cancel();
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
       }
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [fetchCourses, debouncedSearch]);
+    });
+
+    if (node) observerRef.current.observe(node);
+  },
+  [loading, hasMore, page, searchTerm, categoryFilter, fetchCourses]
+);
+
+
+useEffect(() => {
+  fetchCourses(1, '', '').then(() => {
+    initialLoadRef.current = false;
+  });
+
+  return () => {
+    debouncedSearch.cancel();
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+  };
+}, [fetchCourses, debouncedSearch]);
+
+
+
 
   if (initialLoad) {
     return (
@@ -177,6 +188,7 @@ export default function CoursesList() {
       </div>
     );
   }
+
 
   const showEmptyState = !loading && courses.length === 0;
 
