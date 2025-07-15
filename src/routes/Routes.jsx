@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import Bookmarks from '../pages/Bookmarks';
-import CourseDetail from '../pages/courseDetails';
+import CourseDetail from '../pages/CourseDetails/index';
 import CoursesList from '../pages/CourseList/index';
 import NotFound from '../pages/NotFound';
 
