@@ -1,8 +1,6 @@
-import debounce from 'lodash.debounce';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-
 import { getCourses } from '../api/course-list';
 import CourseCard from '../components/CourseCard';
 import FilterDropdown from '../components/FilterDropdown';
@@ -12,7 +10,6 @@ import SadFaceIcon from '../ui/SadFaceIcon';
 export default function CoursesList() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -24,7 +21,6 @@ export default function CoursesList() {
   const navigate = useNavigate();
   const observerRef = useRef();
   const loadingRef = useRef(false);
-const initialLoadRef = useRef(true);
 
   useEffect(() => {
     const savedBookmarks = localStorage.getItem('courseBookmarks');
@@ -57,20 +53,21 @@ const initialLoadRef = useRef(true);
   }, []);
 
   const fetchCourses = useCallback(
-    async (pageNum = 1, search = '', category = '', isLoadMore = false) => {
+    async (pageNum, search, category, isLoadMore = false) => {
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        abortControllerRef.current.abort(); 
       }
-
+ 
       if (loadingRef.current) return;
       loadingRef.current = true;
+      setLoading(true); 
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
       try {
         if (!isLoadMore) {
-          setLoading(true);
+          setCourses([]);
           setError(null);
         }
 
@@ -89,49 +86,42 @@ const initialLoadRef = useRef(true);
           lessons: [],
         }));
 
-        if (isLoadMore) {
-          setCourses((prev) => [...prev, ...transformedData]);
-        } else {
-          setCourses(transformedData);
-        }
-
-        setHasMore(data.length >= 6);
+        setCourses((prev) => (isLoadMore ? [...prev, ...transformedData] : transformedData));
+        setHasMore(data.length >= 6); 
         setPage(pageNum);
-        setInitialLoad(false);
-        setLoading(false);
       } catch (err) {
         if (err.name !== 'AbortError') {
           console.error('Failed to fetch courses:', err);
           setError(err.message || 'Failed to load courses');
-          setInitialLoad(false);
-          setLoading(false);
-          if (!isLoadMore) {
-            setCourses([]);
-          }
           toast.error('Failed to load courses. Please try again.');
         }
       } finally {
-        loadingRef.current = false;
+        setLoading(false);
+        loadingRef.current = false; 
       }
     },
     []
   );
 
-  const debouncedSearch = useCallback(
-    debounce((search, category) => {
-      fetchCourses(1, search, category);
-    }, 500),
-    [fetchCourses]
-  );
+  useEffect(() => {
+    const debouncedFetch = setTimeout(() => {
+      fetchCourses(1, searchTerm, categoryFilter, false); 
+    }, 500); 
+    return () => {
+      clearTimeout(debouncedFetch);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [searchTerm, categoryFilter, fetchCourses]); 
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    debouncedSearch(term, categoryFilter);
   };
 
   const handleCategoryChange = (category) => {
-    setCategoryFilter(category);
-    debouncedSearch(searchTerm, category === 'All' ? '' : category);
+    const value = category === 'All' ? '' : category;
+    setCategoryFilter(value);
   };
 
   const handleCourseClick = useCallback(
@@ -141,47 +131,23 @@ const initialLoadRef = useRef(true);
     [navigate]
   );
 
+  const lastCourseElementRef = useCallback(
+    (node) => {
+      if (loadingRef.current || !hasMore) return; 
+      if (observerRef.current) observerRef.current.disconnect();
 
-
-const lastCourseElementRef = useCallback(
-  (node) => {
-    if (loadingRef.current) return;
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore && !loading) {
-        if (!initialLoadRef.current) {
-          fetchCourses(page + 1, searchTerm, categoryFilter, true);
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingRef.current) {
+          fetchCourses(page + 1, searchTerm, categoryFilter, true); 
         }
-      }
-    });
+      });
 
-    if (node) observerRef.current.observe(node);
-  },
-  [loading, hasMore, page, searchTerm, categoryFilter, fetchCourses]
-);
+      if (node) observerRef.current.observe(node);
+    },
+    [hasMore, page, searchTerm, categoryFilter, fetchCourses]
+  );
 
-
-useEffect(() => {
-  fetchCourses(1, '', '').then(() => {
-    initialLoadRef.current = false;
-  });
-
-  return () => {
-    debouncedSearch.cancel();
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-  };
-}, [fetchCourses, debouncedSearch]);
-
-
-
-
-  if (initialLoad) {
+  if (loading && page === 1 && courses.length === 0) {
     return (
       <div className='container mx-auto flex min-h-screen items-center justify-center px-4 py-8'>
         <div className='h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
@@ -189,8 +155,7 @@ useEffect(() => {
     );
   }
 
-
-  const showEmptyState = !loading && courses.length === 0;
+  const showEmptyState = !loading && courses.length === 0 && !error;
 
   return (
     <div className='container mx-auto min-h-screen px-4 py-8'>
@@ -224,9 +189,9 @@ useEffect(() => {
         </Link>
       </div>
 
-      {loading && !initialLoad && (
-        <div className='flex justify-center py-8'>
-          <div className='h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
+      {error && (
+        <div className='py-8 text-center text-red-500'>
+          <p>{error}</p>
         </div>
       )}
 
@@ -244,7 +209,6 @@ useEffect(() => {
             onClick={() => {
               setSearchTerm('');
               setCategoryFilter('');
-              fetchCourses(1, '', '');
             }}
             className='rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600'
           >
@@ -283,7 +247,7 @@ useEffect(() => {
               })}
             </div>
 
-            {loading && courses.length > 0 && (
+            {loading && courses.length > 0 && ( 
               <div className='flex justify-center py-8'>
                 <div className='h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
               </div>
