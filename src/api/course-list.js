@@ -8,14 +8,14 @@ const api = axios.create({
 });
 
 const CACHE_PREFIX = 'course_cache_';
-const CACHE_EXPIRY = 5 * 60 * 1000; 
+const CACHE_EXPIRY = 5 * 60 * 1000;
 
 const getCacheKey = (page, limit, search, category) => {
   return `${CACHE_PREFIX}${page}_${limit}_${search}_${category}`;
 };
 
 const isCacheValid = (cachedData) => {
-  return cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRY;
+  return cachedData && Date.now() - cachedData.timestamp < CACHE_EXPIRY;
 };
 
 export const getCourses = async (
@@ -26,7 +26,7 @@ export const getCourses = async (
   signal = null
 ) => {
   const cacheKey = getCacheKey(page, limit, search, category);
-  
+
   const cachedData = JSON.parse(localStorage.getItem(cacheKey));
   if (isCacheValid(cachedData)) {
     return cachedData.data;
@@ -48,10 +48,10 @@ export const getCourses = async (
 
     const config = signal ? { params, signal } : { params };
     const response = await api.get('/course-list', config);
-    
+
     const dataToCache = {
       data: response.data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     localStorage.setItem(cacheKey, JSON.stringify(dataToCache));
 
@@ -70,7 +70,7 @@ export const getCourses = async (
 
 export const getCourseById = async (id) => {
   const cacheKey = `${CACHE_PREFIX}single_${id}`;
-  
+
   const cachedData = JSON.parse(localStorage.getItem(cacheKey));
   if (isCacheValid(cachedData)) {
     return cachedData.data;
@@ -105,7 +105,7 @@ export const getCourseById = async (id) => {
 
     const dataToCache = {
       data: transformedData,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     localStorage.setItem(cacheKey, JSON.stringify(dataToCache));
 

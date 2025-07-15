@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import debounce from "lodash.debounce";
-import CourseCard from "../components/CourseCard";
-import SearchBar from "../components/SearchBar";
-import FilterDropdown from "../components/FilterDropdown";
-import { getCourses } from "../api/course-list";
-import toast from "react-hot-toast";
-import { useNavigate, Link } from "react-router-dom";
-import SadFaceIcon from "../ui/SadFaceIcon";
+import debounce from 'lodash.debounce';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { getCourses } from '../api/course-list';
+import CourseCard from '../components/CourseCard';
+import FilterDropdown from '../components/FilterDropdown';
+import SearchBar from '../components/SearchBar';
+import SadFaceIcon from '../ui/SadFaceIcon';
 
 export default function CoursesList() {
   const [courses, setCourses] = useState([]);
@@ -15,15 +16,15 @@ export default function CoursesList() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [bookmarks, setBookmarks] = useState([]);
   const [bookmarkLoading, setBookmarkLoading] = useState(null);
   const abortControllerRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedBookmarks = localStorage.getItem("courseBookmarks");
+    const savedBookmarks = localStorage.getItem('courseBookmarks');
     if (savedBookmarks) {
       setBookmarks(JSON.parse(savedBookmarks));
     }
@@ -37,14 +38,12 @@ export default function CoursesList() {
         ? prev.filter((id) => id !== courseId)
         : [...prev, courseId];
 
-      localStorage.setItem("courseBookmarks", JSON.stringify(newBookmarks));
+      localStorage.setItem('courseBookmarks', JSON.stringify(newBookmarks));
 
       toast.success(
-        prev.includes(courseId)
-          ? "Course removed from bookmarks"
-          : "Course added to bookmarks",
+        prev.includes(courseId) ? 'Course removed from bookmarks' : 'Course added to bookmarks',
         {
-          position: "bottom-center",
+          position: 'bottom-center',
           duration: 2000,
         }
       );
@@ -54,69 +53,61 @@ export default function CoursesList() {
     });
   }, []);
 
-  const fetchCourses = useCallback(async (
-    pageNum = 1,
-    search = "",
-    category = "",
-    isLoadMore = false
-  ) => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    try {
-      if (!isLoadMore) {
-        setLoading(true);
-        setError(null);
+  const fetchCourses = useCallback(
+    async (pageNum = 1, search = '', category = '', isLoadMore = false) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
 
-      const data = await getCourses(
-        pageNum,
-        6,
-        search,
-        category,
-        controller.signal
-      );
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      const transformedData = data.map((item) => ({
-        id: item.id,
-        title: item.Title,
-        teacher: item["Teacher-Name"],
-        description: item["Short-Description"],
-        category: item.category,
-        image_source:
-          item.Image?.url && item.Image.url.trim() !== ""
-            ? item.Image.url
-            : "https://via.placeholder.com/300x200",
-        lessons: [],
-      }));
+      try {
+        if (!isLoadMore) {
+          setLoading(true);
+          setError(null);
+        }
 
-      if (isLoadMore) {
-        setCourses((prev) => [...prev, ...transformedData]);
-      } else {
-        setCourses(transformedData);
-      }
+        const data = await getCourses(pageNum, 6, search, category, controller.signal);
 
-      setHasMore(data.length >= 6);
-      setPage(pageNum);
-      setInitialLoad(false);
-      setLoading(false);
-    } catch (err) {
-      if (err.name !== "AbortError") {
-        console.error("Failed to fetch courses:", err);
-        setError(err.message || "Failed to load courses");
+        const transformedData = data.map((item) => ({
+          id: item.id,
+          title: item.Title,
+          teacher: item['Teacher-Name'],
+          description: item['Short-Description'],
+          category: item.category,
+          image_source:
+            item.Image?.url && item.Image.url.trim() !== ''
+              ? item.Image.url
+              : 'https://via.placeholder.com/300x200',
+          lessons: [],
+        }));
+
+        if (isLoadMore) {
+          setCourses((prev) => [...prev, ...transformedData]);
+        } else {
+          setCourses(transformedData);
+        }
+
+        setHasMore(data.length >= 6);
+        setPage(pageNum);
         setInitialLoad(false);
         setLoading(false);
-        if (!isLoadMore) {
-          setCourses([]);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Failed to fetch courses:', err);
+          setError(err.message || 'Failed to load courses');
+          setInitialLoad(false);
+          setLoading(false);
+          if (!isLoadMore) {
+            setCourses([]);
+          }
+          toast.error('Failed to load courses. Please try again.');
         }
-        toast.error("Failed to load courses. Please try again.");
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   const debouncedSearch = useCallback(
     debounce((search, category) => {
@@ -132,15 +123,18 @@ export default function CoursesList() {
 
   const handleCategoryChange = (category) => {
     setCategoryFilter(category);
-    debouncedSearch(searchTerm, category === "All" ? "" : category);
+    debouncedSearch(searchTerm, category === 'All' ? '' : category);
   };
 
-  const handleCourseClick = useCallback((courseId) => {
-    navigate(`/courses/${courseId}`);
-  }, [navigate]);
+  const handleCourseClick = useCallback(
+    (courseId) => {
+      navigate(`/courses/${courseId}`);
+    },
+    [navigate]
+  );
 
   useEffect(() => {
-    fetchCourses(1, "", "");
+    fetchCourses(1, '', '');
 
     return () => {
       debouncedSearch.cancel();
@@ -152,8 +146,8 @@ export default function CoursesList() {
 
   if (initialLoad) {
     return (
-      <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className='container mx-auto flex min-h-screen items-center justify-center px-4 py-8'>
+        <div className='h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
       </div>
     );
   }
@@ -161,71 +155,68 @@ export default function CoursesList() {
   const showEmptyState = !loading && courses.length === 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8">All Courses</h1>
+    <div className='container mx-auto min-h-screen px-4 py-8'>
+      <h1 className='mb-8 text-3xl font-bold'>All Courses</h1>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className='mb-8 flex flex-col gap-4 md:flex-row'>
         <SearchBar
           value={searchTerm}
           onChange={(e) => handleSearch(e.target.value)}
-          onClear={() => handleSearch("")}
+          onClear={() => handleSearch('')}
         />
         <FilterDropdown
           value={categoryFilter}
           onChange={handleCategoryChange}
           categories={[
-            "All",
-            "Frontend",
-            "Backend",
-            "Fullstack",
-            "Mobile",
-            "DevOps",
-            "Data Science",
-            "AI/ML",
+            'All',
+            'Frontend',
+            'Backend',
+            'Fullstack',
+            'Mobile',
+            'DevOps',
+            'Data Science',
+            'AI/ML',
           ]}
         />
         <Link
-          to="/bookmarks"
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors no-underline"
+          to='/bookmarks'
+          className='rounded-lg bg-blue-500 px-6 py-2 text-white no-underline transition-colors hover:bg-blue-600'
         >
           Bookmarks
         </Link>
       </div>
 
       {loading && !initialLoad && (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+        <div className='flex justify-center py-8'>
+          <div className='h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-blue-500'></div>
         </div>
       )}
 
       {showEmptyState ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-        <SadFaceIcon className="h-16 w-16 text-gray-400 mb-4" />
+        <div className='flex flex-col items-center justify-center py-20 text-center'>
+          <SadFaceIcon className='mb-4 h-16 w-16 text-gray-400' />
 
-          <h2 className="text-xl font-medium text-gray-600 mb-2">
-            No courses found
-          </h2>
-          <p className="text-gray-500 mb-6 max-w-md">
+          <h2 className='mb-2 text-xl font-medium text-gray-600'>No courses found</h2>
+          <p className='mb-6 max-w-md text-gray-500'>
             {searchTerm || categoryFilter
-              ? "No courses match your search criteria. Try adjusting your filters."
-              : "There are currently no courses available. Please check back later."}
+              ? 'No courses match your search criteria. Try adjusting your filters.'
+              : 'There are currently no courses available. Please check back later.'}
           </p>
           <button
             onClick={() => {
-              setSearchTerm("");
-              setCategoryFilter("");
-              fetchCourses(1, "", "");
+              setSearchTerm('');
+              setCategoryFilter('');
+              fetchCourses(1, '', '');
             }}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className='rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600'
           >
             Reset Filters
           </button>
         </div>
       ) : (
         <>
-          <div className="space-y-10">
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className='space-y-10'>
+            <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
               {courses.map((course) => (
                 <CourseCard
                   key={course.id}
@@ -239,12 +230,10 @@ export default function CoursesList() {
             </div>
 
             {hasMore && !loading && courses.length > 0 && (
-              <div className="flex justify-center">
+              <div className='flex justify-center'>
                 <button
-                  onClick={() =>
-                    fetchCourses(page + 1, searchTerm, categoryFilter, true)
-                  }
-                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  onClick={() => fetchCourses(page + 1, searchTerm, categoryFilter, true)}
+                  className='rounded-lg bg-blue-500 px-6 py-2 text-white transition-colors hover:bg-blue-600'
                 >
                   Load More
                 </button>

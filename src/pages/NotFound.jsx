@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 
 const NotFound = () => {
   return (
-    <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4'>
-      <div className='max-w-md w-full text-center'>
-        <div className='mx-auto w-40 h-40 mb-6'>
+    <div className='flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4'>
+      <div className='w-full max-w-md text-center'>
+        <div className='mx-auto mb-6 h-40 w-40'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             viewBox='0 0 24 24'
@@ -21,27 +21,25 @@ const NotFound = () => {
           </svg>
         </div>
 
-        <h1 className='text-5xl font-bold text-gray-800 mb-4'>404</h1>
+        <h1 className='mb-4 text-5xl font-bold text-gray-800'>404</h1>
 
-        <h2 className='text-2xl font-semibold text-gray-700 mb-4'>
-          Page Not Found
-        </h2>
+        <h2 className='mb-4 text-2xl font-semibold text-gray-700'>Page Not Found</h2>
 
-        <p className='text-gray-500 mb-8'>
+        <p className='mb-8 text-gray-500'>
           Oops! The page you're looking for doesn't exist or has been moved.
         </p>
 
-        <div className='flex flex-col sm:flex-row gap-4 justify-center'>
+        <div className='flex flex-col justify-center gap-4 sm:flex-row'>
           <Link
             to='/'
-            className='px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition'
+            className='rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700'
           >
             Go to Homepage
           </Link>
 
           <button
             onClick={() => window.history.back()}
-            className='px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition'
+            className='rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 transition hover:bg-gray-100'
           >
             Go Back
           </button>
