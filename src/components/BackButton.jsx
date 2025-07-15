@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import ArrowLeftIcon from '../../../ui/ArrowLeftIcon';
+import ArrowLeftIcon from '../ui/ArrowLeftIcon';
 
 export default function BackButton({ to = '/', children = 'Back to Courses' }) {
   const navigate = useNavigate();

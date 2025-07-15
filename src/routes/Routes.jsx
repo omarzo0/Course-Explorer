@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-import Bookmarks from '../pages/Bookmarks';
+import Bookmarks from '../pages/bookmarksList/index';
 import CourseDetail from '../pages/CourseDetails/index';
 import CoursesList from '../pages/CourseList/index';
 import NotFound from '../pages/NotFound';

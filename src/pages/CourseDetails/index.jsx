@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useCourseDetails } from './hooks/useCourseDetails';
 import Loader from '../../components/Loader';
 import ErrorMessage from './components/ErrorMessage';
-import BackButton from './components/BackButton';
+import BackButton from '../../components/BackButton';
 import CourseHeader from './components/CourseHeader';
 import CourseDescription from './components/CourseDescription';
 import SyllabusList from './components/SyllabusList';

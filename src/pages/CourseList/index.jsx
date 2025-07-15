@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCourses } from './hooks/useCourses';
 import { useBookmarks } from './hooks/useBookmarks';
-import LoadingSpinner from './components/LoadingSpinner';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from './components/EmptyState';
 import CoursesGrid from './components/CoursesGrid';
 import FiltersBar from './components/FiltersBar';

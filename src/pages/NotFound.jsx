@@ -1,24 +1,12 @@
 import { Link } from 'react-router-dom';
+import ErrorIcon from '../ui/ErrorIcon';
 
 const NotFound = () => {
   return (
     <div className='flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4'>
       <div className='w-full max-w-md text-center'>
         <div className='mx-auto mb-6 h-40 w-40'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='1.5'
-            className='text-gray-400'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-            />
-          </svg>
+        <ErrorIcon className="h-40 w-40" />
         </div>
 
         <h1 className='mb-4 text-5xl font-bold text-gray-800'>404</h1>
@@ -32,7 +20,7 @@ const NotFound = () => {
         <div className='flex flex-col justify-center gap-4 sm:flex-row'>
           <Link
             to='/'
-            className='rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700'
+            className='rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700 no-underline'
           >
             Go to Homepage
           </Link>
@@ -47,7 +35,7 @@ const NotFound = () => {
 
         <p className='mt-8 text-sm text-gray-400'>
           Need help?{' '}
-          <Link to='/contact' className='text-blue-500 hover:underline'>
+          <Link to='/contact' className='text-blue-500 hover:underline no-underline'>
             Contact support
           </Link>
         </p>

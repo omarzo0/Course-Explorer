@@ -1,6 +1,6 @@
 // components/CoursesGrid.js
 import CourseCard from './CourseCard';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 export default function CoursesGrid({
   courses,
